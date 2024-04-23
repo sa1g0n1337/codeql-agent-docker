@@ -1,7 +1,5 @@
 # FROM --platform=amd64 maven:3.8-openjdk-17-slim
-FROM --platform=amd64 maven:3-jdk-8-slim
-
-RUN ls -lia $JAVA_HOME
+FROM --platform=amd64 maven:3.8-openjdk-16-slim
 
 RUN mkdir -p /opt/jdk/ /opt/maven/
 
