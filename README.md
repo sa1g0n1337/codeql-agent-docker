@@ -140,8 +140,9 @@ docker run --rm --name codeql-agent-docker \
     <summary> Scan with custom queries </summary>
 
 By default, we use query suites like `<language>-security-extended.qls` from CodeQL's public packs. The `$QS` and `$QS_ONLY` environment variables allow you to create your own CodeQL queries and control the execution:
-  - Run only your custom queries.
-  - Run your custom queries along with the default CodeQL query packs.
+
+- Run only your custom queries.
+- Run your custom queries along with the default CodeQL query packs.
 
 **To use custom queries:**
 
