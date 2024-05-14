@@ -1,0 +1,33 @@
+services:
+  codeql-java:
+    build: 
+      context: .  # Build the image from the current directory (context)
+      dockerfile: Dockerfile-java  # Specify the Dockerfile name
+    volumes:
+      - jdkvol:/opt/jdk  # Mount a pre-existing JDK volume
+      - mavenvol:/opt/maven  # Mount a pre-existing Maven volume
+    command: ["sleep", "30"]  # Execute sleep command for 30 seconds
+    stop_grace_period: 0s 
+
+  codeql-agent:
+    build: 
+      context: .  # Build the image from the current directory (context)
+      dockerfile: Dockerfile  # Specify the Dockerfile name
+    volumes:
+      - ${SRC}:/opt/src  # Mount current directory to /opt/src in the container
+      - ${SRC}/codeql-results:/opt/results  # Persistent volume for results
+      - jdkvol:/opt/jdk  # Mount jdk volume (assumed to exist)
+      - mavenvol:/opt/maven  # Mount maven volume (assumed to exist)
+    environment:
+      LANGUAGE: java  # Set environment variable LANGUAGE
+      JAVA_HOME: /opt/jdk  # Set environment variable JAVA_HOME
+      MAVEN_HOME: /opt/maven  # Set environment variable MAVEN_HOME
+      JAVA_OPTS: -Xmx512m -Xms256m -XX:+UseG1GC -XX:G1HeapRegionSize=4M -XX:MaxGCPauseMillis=200 -XX:ParallelGCThreads=4
+      COMMAND: mvn -Dproject.build.sourceEncoding=UTF-8 -Dproject.reporting.outputEncoding=UTF-8 clean package install -DskipTests # Set the command to execute
+    depends_on:
+      - codeql-java  # Run codeql-agent only after codeql-java
+
+volumes:
+  jdkvol:
+  mavenvol:
+  codeql-agent-results:  # Create a volume for codeql-agent results

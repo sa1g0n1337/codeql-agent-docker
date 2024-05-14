@@ -6,11 +6,10 @@ LABEL maintainer="CodeQL Agent Community"
 ENV DEBIAN_FRONTEND=noninteractive
 
 # Set up the enviroment
-RUN apt-get update && \
-	apt-get upgrade -y && \
-	apt-get install -y --no-install-recommends \
-	software-properties-common \
-	vim \
+RUN apt-get update && apt-get install -y --no-install-recommends \
+	software-properties-common 
+
+RUN apt-get install -y vim \
 	curl \
 	wget \
 	git \
@@ -27,7 +26,6 @@ RUN apt-get update && \
 	g++ \
 	make \
 	gcc \
-	nodejs \
 	apt-utils \
 	rsync \
 	file \
@@ -39,6 +37,8 @@ RUN apt-get update && \
 	ln -sf /usr/bin/python3.8 /usr/bin/python && \
 	ln -sf /usr/bin/pip3 /usr/bin/pip 
 
+RUN curl -sL https://deb.nodesource.com/setup_18.x | bash -
+
 # Install Gradle
 ENV GRADLE_VERSION=7.4.2
 RUN wget https://services.gradle.org/distributions/gradle-${GRADLE_VERSION}-bin.zip -P /tmp
@@ -46,7 +46,7 @@ RUN unzip -d /opt/gradle /tmp/gradle-${GRADLE_VERSION}-bin.zip
 RUN ln -s /opt/gradle/gradle-${GRADLE_VERSION} /opt/gradle/latest
 
 # Install Linguist
-RUN apt-get install -y cmake pkg-config libicu-dev zlib1g-dev libcurl4-openssl-dev libssl-dev ruby-dev
+RUN apt-get install -y cmake pkg-config libicu-dev zlib1g-dev libcurl4-openssl-dev libssl-dev ruby-dev nodejs
 RUN gem install github-linguist
 
 

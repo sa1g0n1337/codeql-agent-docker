@@ -1,0 +1,6 @@
+name: custom-query
+version: 1.0.0
+query-suites:
+  - queries: "*.ql"
+dependencies:
+  codeql/javascript-queries: "*"

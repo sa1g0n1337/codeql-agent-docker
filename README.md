@@ -61,6 +61,8 @@ You can set environment variables to use the following supported options:
 `SAVE_CACHE_FLAG` | Value `--save-cache`. Aggressively save intermediate results to the disk cache. This may speed up subsequent queries if they are similar. Be aware that using this option will greatly increase disk usage and initial evaluation time.
 `ACTION` | Value `create-database-only`. Creating CodeQL database only without executing CodeQL analysis.
 `COMMAND` | Value `<command>`. The variable used when you create a CodeQL database for one or more compiled languages, omit if the only languages requested are Python and JavaScript. This specifies the build commands needed to invoke the compiler. If you don't set this variable, CodeQL will attempt to detect the build system automatically, using a built-in autobuilder.
+`CQ` | Value: `<custom-queries-path>`. Specify the path to your custom queries to run over your database. To run this you have to mount custom queries directory from host to container and then set this value to the path in the container (check example below). For more details, please check [Using custom queries with the CodeQL CLI](https://docs.github.com/en/code-security/codeql-cli/using-the-advanced-functionality-of-the-codeql-cli/using-custom-queries-with-the-codeql-cli)
+`CQ_ONLY` | Value: `true`. Enable this option to run only custom queries.
 
 ---
 
@@ -129,6 +131,32 @@ docker run --rm --name codeql-agent-docker \
   -v "$PWD:/opt/src" \
   -v "$PWD/codeql-agent-results:/opt/results" \
   -e "USERID=$(id -u ${USER})" -e "GROUPID=$(id -g ${USER}) \
+  doublevkay/codeql-agent
+```
+
+</details>
+
+<details>
+    <summary> Scan with custom queries </summary>
+
+By default, we use query suites like `<language>-security-extended.qls` from CodeQL's public packs. The `$QS` and `$QS_ONLY` environment variables allow you to create your own CodeQL queries and control the execution:
+  - Run only your custom queries.
+  - Run your custom queries along with the default CodeQL query packs.
+
+**To use custom queries:**
+
+1. Mount the custom queries directory from your host machine to the container.
+2. Set the `CQ` environment variable within the container to the path of the mounted directory.
+
+```bash
+docker run --rm --name codeql-agent-docker \
+  -v "$PWD:/opt/src" \
+  -v "$PWD/codeql-agent-results:/opt/results" \
+  -e "LANGUAGE=java" \
+  -e "COMMAND=mvn clean install" \
+  -v "$PWD/customquery:/tmp/customquery" \
+  -e "CQ=/tmp/customquery" \
+  -e "CQ_ONLY=true" \
   doublevkay/codeql-agent
 ```
 

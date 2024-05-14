@@ -109,6 +109,10 @@ if [ -z $THREADS ]; then
     THREADS="0"
 fi
 
+if [ -z $CUSTOM_QUERY_ONLY ]; then
+    CUSTOM_QUERY_ONLY="true"
+fi
+
 DB="$OUTPUT/codeql-db"
 
 # Set THREADS
@@ -117,6 +121,8 @@ DB="$OUTPUT/codeql-db"
 echo "----------------"
 print_green " [+] Language: $LANGUAGE"
 print_green " [+] Query-suites: $QS"
+print_green " [+] Custom queries: $CQ"
+print_green " [+] Custom queries only: $CQ_ONLY"
 print_green " [+] Database: $DB"
 print_green " [+] Source: $SRC"
 print_green " [+] Output: $OUTPUT"
@@ -145,8 +151,23 @@ create_database() {
 }
 
 scan() {
-    print_green "[Running] Start Scanning: codeql database analyze --format=$FORMAT --threads=$THREADS $SAVE_CACHE_FLAG --output=$OUTPUT/issues.$FORMAT $DB $QS"
-    codeql database analyze --off-heap-ram=0 --format=$FORMAT --threads=$THREADS $SAVE_CACHE_FLAG --output=$OUTPUT/issues.$FORMAT $DB $QS
+    if [[ -n "$CQ" ]]; then
+        if check_valid_codeql_pack "$CQ"; then
+            if [[ "$CQ_ONLY" == "true" ]]; then
+                print_green "[Running] Start Scanning: codeql database analyze --format=$FORMAT --threads=$THREADS $SAVE_CACHE_FLAG --output=$OUTPUT/issues.$FORMAT $DB $CQ"
+                codeql database analyze --off-heap-ram=0 --format=$FORMAT --threads=$THREADS $SAVE_CACHE_FLAG --output=$OUTPUT/issues.$FORMAT $DB $CQ
+            else
+                print_green "[Running] Start Scanning: codeql database analyze --format=$FORMAT --threads=$THREADS $SAVE_CACHE_FLAG --output=$OUTPUT/issues.$FORMAT $DB $QS path:$CQ"
+                codeql database analyze --off-heap-ram=0 --format=$FORMAT --threads=$THREADS $SAVE_CACHE_FLAG --output=$OUTPUT/issues.$FORMAT $DB $QS path:$CQ
+            fi
+        else
+            print_red "[!] Invalid Custom Query directory"
+        fi
+    else
+        print_green "[Running] Start Scanning: codeql database analyze --format=$FORMAT --threads=$THREADS $SAVE_CACHE_FLAG --output=$OUTPUT/issues.$FORMAT $DB $QS"
+        codeql database analyze --off-heap-ram=0 --format=$FORMAT --threads=$THREADS $SAVE_CACHE_FLAG --output=$OUTPUT/issues.$FORMAT $DB $QS
+    fi
+
     if [ $? -ne 0 ]; then
         print_red "[!] CodeQL analyze failed."
         finalize
@@ -180,6 +201,24 @@ main() {
     fi
     finalize
     echo "[Complete]"
+}
+
+check_valid_codeql_pack() {
+    local directory_path="$1"
+    # Check if directory exists
+    if [[ ! -d "$directory_path" ]]; then
+        return 1
+    fi
+
+    if [[ ! -f "$directory_path/qlpack.yml" ]]; then
+        return 1
+    fi
+
+    if [[ $(find "$directory_path" -name "*.ql" | wc -l) -eq 0 ]]; then
+        return 1
+    fi
+
+    return 0
 }
 
 # Main
