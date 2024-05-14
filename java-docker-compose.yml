@@ -30,4 +30,4 @@ services:
 volumes:
   jdkvol:
   mavenvol:
-  codeql-agent-results:  # Create a volume for codeql-agent results
+  # codeql-agent-results:  # Create a volume for codeql-agent results
